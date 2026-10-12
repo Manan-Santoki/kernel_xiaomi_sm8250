@@ -1479,7 +1479,8 @@ exit:
 	cluster_unprepare(cpu->parent, cpumask, idx, true, end_time, success);
 	cpu_unprepare(cpu, idx, true);
 	dev->last_residency = ktime_us_delta(ktime_get(), start);
-	update_history(dev, idx);
+	if (success)
+		update_history(dev, idx);
 	trace_cpu_idle_exit(idx, success);
 	if (lpm_prediction && cpu->lpm_prediction) {
 		histtimer_cancel();
@@ -1490,7 +1491,7 @@ exit:
 		cpu->bias = 0;
 	}
 	local_irq_enable();
-	return idx;
+	return success ? idx : -EBUSY;
 }
 
 static void lpm_cpuidle_s2idle(struct cpuidle_device *dev,
